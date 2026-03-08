@@ -1,6 +1,7 @@
 ﻿using EduFlow.Data;
 using EduFlow.DTOs;
 using EduFlow.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -58,6 +59,12 @@ namespace EduFlow.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
+        [Authorize(Roles = "Student")]
+        [HttpGet("test")]
+        public async Task<IActionResult> TestMethd()
+        {
+            return Ok();
+        }
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]));
