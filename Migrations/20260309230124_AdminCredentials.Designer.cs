@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EduFlow.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260308220334_AddCoreModels")]
-    partial class AddCoreModels
+    [Migration("20260309230124_AdminCredentials")]
+    partial class AdminCredentials
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -200,6 +200,17 @@ namespace EduFlow.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 3, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@test.com",
+                            FullName = "Dalibor Naspalic",
+                            PasswordHash = "$2a$11$B/.urO6nJZAsSML3OCX5QOoj0TG1Kf2HMBgC6NExTb2DJwUdEl8tG",
+                            Role = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("EduFlow.Models.Assignment", b =>
@@ -218,7 +229,7 @@ namespace EduFlow.Migrations
                     b.HasOne("EduFlow.Models.User", "Professor")
                         .WithMany()
                         .HasForeignKey("ProfessorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Professor");

@@ -12,13 +12,13 @@
 ✅ Protected routes with authorization
 
 PHASE 2 — Core Models & Relationships
-⬜ Course model
-⬜ Enrollment model
-⬜ Module model
-⬜ Quiz model
-⬜ Assignment model
-⬜ EF relationships between all models
-⬜ Migrations for each
+✅ Course model
+✅ Enrollment model
+✅ Module model
+✅ Quiz model
+✅ Assignment model
+✅ EF relationships between all models
+✅ Migrations for each
 
 PHASE 3 — Business Logic
 ⬜ Role-based authorization (Student, Professor, Admin)
