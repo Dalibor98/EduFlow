@@ -43,7 +43,7 @@ namespace EduFlow.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok("User registered succesfully");
+            return Ok("Student registered succesfully");
         }
 
         [HttpPost("login")]

@@ -44,3 +44,5 @@ PHASE 5 — Portfolio Ready
 
 *Test data:
     Account1: -john@test.com password123
+    Admin: adming@test.com password123
+    Professor: professor@test.com password123
