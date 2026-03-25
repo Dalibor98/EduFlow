@@ -19,7 +19,7 @@ namespace EduFlow.Controllers
             _context = context;
         }
 
-        [HttpPost]
+        [HttpPost("create-course")]
         [Authorize(Roles ="Professor")]
         public async Task <IActionResult> CreateCourse(CourseCreateDto dto)
         {
