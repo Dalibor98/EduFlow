@@ -21,9 +21,10 @@ PHASE 2 — Core Models & Relationships
 ✅ Migrations for each
 
 PHASE 3 — Business Logic
-⬜ Role-based authorization (Student, Professor, Admin)
-⬜ Professor creates courses
-⬜ Student enrolls in courses
+✅ Role-based authorization (Student, Professor, Admin)
+✅ Professor creates courses
+✅ Student enrolls in courses
+✅ Student unenrolls from the courses
 ⬜ Modules and materials per course
 ⬜ Quiz creation and submission
 ⬜ Assignment submission
@@ -46,3 +47,4 @@ PHASE 5 — Portfolio Ready
     Account1: -john@test.com password123
     Admin: adming@test.com password123
     Professor: professor@test.com password123
+    Student : student@test.com password123
