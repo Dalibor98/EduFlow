@@ -10,7 +10,5 @@
         public DateTime CreatedAt { get; set; }
         public ICollection<Quiz> Quizzes { get; set; } = new HashSet<Quiz>();
         public ICollection<Assignment> Assignments { get; set; } = new HashSet<Assignment>();
-
-
     }
 }
