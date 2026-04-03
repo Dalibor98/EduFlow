@@ -11,7 +11,7 @@ namespace EduFlow.Data
         public DbSet<Module> Modules {  get; set; }
         public DbSet<Assignment> Assignments {  get; set; }
         public DbSet <Enrollment> Enrollments {  get; set; }
-
+        public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base (options)
         {
         }
@@ -35,6 +35,8 @@ namespace EduFlow.Data
                 .WithMany()
                 .HasForeignKey(c => c.ProfessorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            
         }
     }
 }
