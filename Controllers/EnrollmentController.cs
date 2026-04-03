@@ -25,7 +25,7 @@ namespace EduFlow.Controllers
 
         [HttpPost("enroll")]
         [Authorize(Roles ="Student")]
-        public async Task<IActionResult> Enroll(EnrollmentDto dto)
+        public async Task<IActionResult> Enroll(EnrollmentCreateDto dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
