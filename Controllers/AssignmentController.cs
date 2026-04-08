@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Xml;
 
 namespace EduFlow.Controllers
 {
@@ -23,7 +24,7 @@ namespace EduFlow.Controllers
         }
 
 
-        [HttpPost("{moduleId}")]
+        [HttpPost("create-assignment/{moduleId}")]
         [Authorize(Roles = "Professor")]
 
         public async Task<IActionResult> CreateAssignment(int moduleId, AssignmentCreateDto dto)
@@ -59,10 +60,59 @@ namespace EduFlow.Controllers
                 DueAt = dto.DueAt,
             };
 
-            _context.Assignments.Add(assignment);
+            await _context.Assignments.AddAsync(assignment);
             await _context.SaveChangesAsync();
 
             return Ok("Assignment created succesfully.");
+        }
+
+
+        [HttpPost("submit-assignment/{assignmentId}")]
+        [Authorize(Roles = "Student")]
+
+        public async Task<IActionResult> SubmitAssignment(int assignmentId,AssignmentSubmissionCreateDto dto)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+
+            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (student == null)
+            {
+                return BadRequest("Not authorized.");
+            }
+
+            var assignment = await _context.Assignments
+                .Where(a => a.Id == assignmentId && a.Module.Course.Enrollments.Any(e => e.UserId == student.Id))
+                .FirstOrDefaultAsync();
+
+            if(assignment == null)
+            {
+                return BadRequest("Assignment not found or access denied.");
+            }
+
+            var duplicateCheck = await _context.AssignmentSubmissions
+                .AnyAsync(a => a.UserId == student.Id && a.AssignmentId == assignmentId);
+                
+
+            if (duplicateCheck)
+            {
+                return BadRequest("Student had submitted his response");
+            }
+
+            var assignmentSubmission = new AssignmentSubmission
+            {
+                UserId = student.Id,
+                AssignmentId = assignmentId,
+                Answer = dto.Answer,
+                SubmissionTime = DateTime.UtcNow,
+            };
+
+            await _context.AssignmentSubmissions.AddAsync(assignmentSubmission);
+            await _context.SaveChangesAsync();
+            return Ok("Assignment has been created succesfully.");
+
+            
+
         }
     }
 }
