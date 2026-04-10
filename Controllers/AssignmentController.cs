@@ -1,5 +1,6 @@
 ﻿using EduFlow.Data;
 using EduFlow.DTOs;
+using EduFlow.DTOs.Assignment;
 using EduFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,19 +13,15 @@ namespace EduFlow.Controllers
     [ApiController]
     public class AssignmentController : ControllerBase
     {
-
         private readonly AppDbContext _context;
-
 
         public AssignmentController (AppDbContext context)
         {
             _context = context;
         }
 
-
-        [HttpPost("create-assignment/{moduleId}")]
+        [HttpPost("{moduleId}")]
         [Authorize(Roles = "Professor")]
-
         public async Task<IActionResult> CreateAssignment(int moduleId, AssignmentCreateDto dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
@@ -60,14 +57,11 @@ namespace EduFlow.Controllers
 
             await _context.Assignments.AddAsync(assignment);
             await _context.SaveChangesAsync();
-
             return Ok("Assignment created succesfully.");
         }
 
-
         [HttpPost("submit-assignment/{assignmentId}")]
         [Authorize(Roles = "Student")]
-
         public async Task<IActionResult> SubmitAssignment(int assignmentId,AssignmentSubmissionCreateDto dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
@@ -112,7 +106,6 @@ namespace EduFlow.Controllers
 
         [HttpPatch("{submissionId}")]
         [Authorize(Roles = "Professor")]
-
         public async Task<IActionResult> GradeSubmission(int submissionId,AssignmentGradeDto dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
@@ -147,7 +140,6 @@ namespace EduFlow.Controllers
             assignmentSubmission.Score = dto.Score;
             await _context.SaveChangesAsync();
             return Ok("Assignment grade overriden succesfully.");
-
         }
     }
 }

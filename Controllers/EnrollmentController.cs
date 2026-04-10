@@ -1,6 +1,6 @@
 ﻿
 using EduFlow.Data;
-using EduFlow.DTOs;
+using EduFlow.DTOs.Enrollment;
 using EduFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
