@@ -1,6 +1,4 @@
-# EduFlow
-✅ PHASE 1 — Foundation✅
-
+*PHASE 1 — Foundation* 
 ✅ Project created
 ✅ EF Code-First setup
 ✅ User model
@@ -11,7 +9,7 @@
 ✅ JWT token generation
 ✅ Protected routes with authorization
 
-PHASE 2 — Core Models & Relationships
+*PHASE 2 — Core Models & Relationships*
 ✅ Course model
 ✅ Enrollment model
 ✅ Module model
@@ -20,16 +18,21 @@ PHASE 2 — Core Models & Relationships
 ✅ EF relationships between all models
 ✅ Migrations for each
 
-PHASE 3 — Business Logic
-✅ Role-based authorization (Student, Professor, Admin)
+*PHASE 3 — Business Logic*
+✅ Role-based authorization
 ✅ Professor creates courses
-✅ Student enrolls in courses
-✅ Student unenrolls from the courses
-⬜ Modules and materials per course
-⬜ Quiz creation and submission
-⬜ Assignment submission
+✅ Student enrolls/unenrolls, get my enrollments
+✅ Professor creates module under a course
+✅ Student gets modules for enrolled course
+✅ Professor creates quiz under a module
+✅ Professor creates assignment under a module
+✅ Student submits assignment
+✅ Professor grades assignment
+⬜ Quiz questions/answers (deferred)
 
-PHASE 4 — Quality & Standards
+*Phase 4 — Quality & Standards (in progress)*
+✅ Data annotations on all DTOs
+✅ DTO folder restructure by feature
 ⬜ Proper error handling
 ⬜ Input validation
 ⬜ Repository pattern
@@ -37,14 +40,10 @@ PHASE 4 — Quality & Standards
 ⬜ Logging
 ⬜ OAuth (Google login)
 
-PHASE 5 — Portfolio Ready
-⬜ Clean GitHub with real commit history
+*PHASE 5 — Portfolio Ready*
+⬜ Clean GitHub with real commit history (currently not following gitflow) 
 ⬜ README
 ⬜ Deployed or locally runnable
-⬜ You can explain every single line
+⬜ MessagingBus,Azure
 
-*Test data:
-    Account1: -john@test.com password123
-    Admin: adming@test.com password123
-    Professor: professor@test.com password123
-    Student : student@test.com password123
+PHASE 6 - FRONT END :) 
