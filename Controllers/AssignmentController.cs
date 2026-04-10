@@ -2,11 +2,9 @@
 using EduFlow.DTOs;
 using EduFlow.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Xml;
 
 namespace EduFlow.Controllers
 {
@@ -110,8 +108,45 @@ namespace EduFlow.Controllers
             await _context.AssignmentSubmissions.AddAsync(assignmentSubmission);
             await _context.SaveChangesAsync();
             return Ok("Assignment has been created succesfully.");
+        }
 
-            
+        [HttpPatch("{submissionId}")]
+        [Authorize(Roles = "Professor")]
+
+        public async Task<IActionResult> GradeSubmission(int submissionId,AssignmentGradeDto dto)
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            var professor = await _context.Users.FirstOrDefaultAsync(u=> u.Email == email);
+            if (professor == null)
+            {
+                return BadRequest("Not authorized.");
+            }
+
+            var assignmentSubmission = await _context.AssignmentSubmissions
+                .Include(asub=> asub.Assignment)
+                .Where(asub=> asub.Id == submissionId && asub.Assignment.Module.Course.ProfessorId==professor.Id)
+                .FirstOrDefaultAsync();
+
+            if (assignmentSubmission == null)
+            {
+                return BadRequest("Submission does not exist or not authorized.");
+            }
+
+            if (dto.Score < 0 || dto.Score > assignmentSubmission.Assignment.MaxScore)
+            {
+                return BadRequest($"Score must be positive and not exceed: {assignmentSubmission.Assignment.MaxScore}");
+            }
+
+            if (assignmentSubmission.Score == null)
+            {
+                assignmentSubmission.Score = dto.Score;
+                await _context.SaveChangesAsync();
+                return Ok("Assignment graded succesfully.");
+            }
+
+            assignmentSubmission.Score = dto.Score;
+            await _context.SaveChangesAsync();
+            return Ok("Assignment grade overriden succesfully.");
 
         }
     }
