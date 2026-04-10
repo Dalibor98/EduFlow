@@ -1,5 +1,5 @@
 ﻿using EduFlow.Data;
-using EduFlow.DTOs;
+using EduFlow.DTOs.Quiz;
 using EduFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -1,4 +1,4 @@
-﻿namespace EduFlow.DTOs
+﻿namespace EduFlow.DTOs.Course
 {
     public class CourseCreateDto
     {

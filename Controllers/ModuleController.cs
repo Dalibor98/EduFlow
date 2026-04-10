@@ -1,5 +1,6 @@
 ﻿using EduFlow.Data;
 using EduFlow.DTOs;
+using EduFlow.DTOs.Module;
 using EduFlow.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,8 +22,8 @@ namespace EduFlow.Controllers
 
 
         [Authorize(Roles = "Professor")]
-        [HttpPost("create-module")]
-        public async Task<IActionResult> CreateModule(ModuleCreateDto _dto)
+        [HttpPost("{courseId}")]
+        public async Task<IActionResult> CreateModule(int courseId,ModuleCreateDto _dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
 
@@ -33,7 +34,7 @@ namespace EduFlow.Controllers
                 return BadRequest("Professor doesn't exist.");
             }
 
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.ProfessorId == professor.Id && c.Id == _dto.CourseId);
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.ProfessorId == professor.Id && c.Id == courseId);
             if(course == null)
             {
                 return BadRequest("Course not found or acess denied.");
@@ -43,7 +44,7 @@ namespace EduFlow.Controllers
             {
                 Title = _dto.Title,
                 Description = _dto.Description,
-                CourseId = _dto.CourseId,
+                CourseId = courseId,
                 CreatedAt = DateTime.UtcNow,
             };
 
