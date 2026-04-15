@@ -1,10 +1,9 @@
-﻿using EduFlow.Data;
-using EduFlow.DTOs;
+﻿using EduFlow.DTOs;
 using EduFlow.DTOs.Assignment;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace EduFlow.Controllers
@@ -13,36 +12,34 @@ namespace EduFlow.Controllers
     [ApiController]
     public class AssignmentController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IAssignmentRepository _assignmentRepository;
+        private readonly IAssignmentSubmissionRepository _assignmentSubmissionRepository;
+        private readonly IModuleRepository _moduleRepository;
 
-        public AssignmentController (AppDbContext context)
+        public AssignmentController(IAssignmentRepository assignmentRepository,
+            IAssignmentSubmissionRepository assignmentSubmissionRepository,
+            IUserRepository userRepository,
+            IModuleRepository moduleRepository)
         {
-            _context = context;
+            _assignmentRepository = assignmentRepository;
+            _assignmentSubmissionRepository = assignmentSubmissionRepository;
+            _moduleRepository = moduleRepository;
         }
 
         [HttpPost("{moduleId}")]
         [Authorize(Roles = "Professor")]
         public async Task<IActionResult> CreateAssignment(int moduleId, AssignmentCreateDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!); 
 
-            var professor = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-            if (professor == null)
-            {
-                return NotFound("Professor doesn't exist.");
-            }
-
-            var module = await _context.Modules
-                .Where(m => m.Id == moduleId && m.Course.ProfessorId == professor.Id)
-                .FirstOrDefaultAsync();
+            var module = await _moduleRepository.GetByIdWithOwnershipCheckAsync(moduleId, userId);
 
             if (module == null)
             {
                 return NotFound("Module not found or access denied.");
             }     
 
-            if(await _context.Assignments.AnyAsync(a => a.Title == dto.Title && a.ModuleId == moduleId))
+            if(await _assignmentRepository.TitleExistsInModuleAsync(dto.Title, moduleId))
             {
                 return BadRequest("Assignment with this title already exists.");
             }
@@ -55,8 +52,8 @@ namespace EduFlow.Controllers
                 DueAt = dto.DueAt,
             };
 
-            await _context.Assignments.AddAsync(assignment);
-            await _context.SaveChangesAsync();
+            await _assignmentRepository.AddAsync(assignment);
+            await _assignmentRepository.SaveChangesAsync();
             return Ok("Assignment created succesfully.");
         }
 
@@ -64,27 +61,18 @@ namespace EduFlow.Controllers
         [Authorize(Roles = "Student")]
         public async Task<IActionResult> SubmitAssignment(int assignmentId,AssignmentSubmissionCreateDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            if (student == null)
-            {
-                return BadRequest("Not authorized.");
-            }
-
-            var assignment = await _context.Assignments
-                .Where(a => a.Id == assignmentId && a.Module.Course.Enrollments.Any(e => e.UserId == student.Id))
-                .FirstOrDefaultAsync();
+            var assignment = await _assignmentRepository.GetByIdWithEnrollmentCheckAsync(assignmentId, userId);
 
             if(assignment == null)
             {
                 return BadRequest("Assignment not found or access denied.");
             }
 
-            var duplicateCheck = await _context.AssignmentSubmissions
-                .AnyAsync(a => a.UserId == student.Id && a.AssignmentId == assignmentId);
-                
+            var duplicateCheck = await _assignmentSubmissionRepository.ExistsAsync(userId, assignmentId);
+
 
             if (duplicateCheck)
             {
@@ -93,14 +81,14 @@ namespace EduFlow.Controllers
 
             var assignmentSubmission = new AssignmentSubmission
             {
-                UserId = student.Id,
+                UserId = userId,
                 AssignmentId = assignmentId,
                 Answer = dto.Answer,
                 SubmissionTime = DateTime.UtcNow,
             };
 
-            await _context.AssignmentSubmissions.AddAsync(assignmentSubmission);
-            await _context.SaveChangesAsync();
+            await _assignmentSubmissionRepository.AddAsync(assignmentSubmission);
+            await _assignmentSubmissionRepository.SaveChangesAsync();
             return Ok("Assignment has been created succesfully.");
         }
 
@@ -108,17 +96,9 @@ namespace EduFlow.Controllers
         [Authorize(Roles = "Professor")]
         public async Task<IActionResult> GradeSubmission(int submissionId,AssignmentGradeDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var professor = await _context.Users.FirstOrDefaultAsync(u=> u.Email == email);
-            if (professor == null)
-            {
-                return BadRequest("Not authorized.");
-            }
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var assignmentSubmission = await _context.AssignmentSubmissions
-                .Include(asub=> asub.Assignment)
-                .Where(asub=> asub.Id == submissionId && asub.Assignment.Module.Course.ProfessorId==professor.Id)
-                .FirstOrDefaultAsync();
+            var assignmentSubmission = await _assignmentSubmissionRepository.GetSubmissionByIdWithOwnershipCheckAsync(submissionId, userId);
 
             if (assignmentSubmission == null)
             {
@@ -130,16 +110,10 @@ namespace EduFlow.Controllers
                 return BadRequest($"Score must be positive and not exceed: {assignmentSubmission.Assignment.MaxScore}");
             }
 
-            if (assignmentSubmission.Score == null)
-            {
-                assignmentSubmission.Score = dto.Score;
-                await _context.SaveChangesAsync();
-                return Ok("Assignment graded succesfully.");
-            }
-
+            var message = assignmentSubmission.Score == null ? "Assignment graded successfully." : "Assignment grade overridden successfully.";
             assignmentSubmission.Score = dto.Score;
-            await _context.SaveChangesAsync();
-            return Ok("Assignment grade overriden succesfully.");
+            await _assignmentSubmissionRepository.SaveChangesAsync();
+            return Ok(message);
         }
     }
 }
