@@ -67,14 +67,22 @@ namespace EduFlow.Controllers
         }
         private string GenerateToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] 
+                ?? throw new InvalidOperationException("JWT Secret is not configured.")));
+
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var issuer = _configuration["JwtSettings:Issuer"];
-            var audience = _configuration["JwtSettings:Audience"];
+
+            var issuer = _configuration["JwtSettings:Issuer"] 
+                ?? throw new InvalidOperationException("JWT Issuer is not configured.");
+
+            var audience = _configuration["JwtSettings:Audience"] 
+                ?? throw new InvalidOperationException("JWT Audience is not configured.");
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
             var token = new JwtSecurityToken(issuer, audience,claims, expires: DateTime.UtcNow.AddHours(1),signingCredentials:credentials);
             return new JwtSecurityTokenHandler().WriteToken(token);
