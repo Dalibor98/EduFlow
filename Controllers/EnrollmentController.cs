@@ -2,11 +2,10 @@
 using EduFlow.Data;
 using EduFlow.DTOs.Enrollment;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
-using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace EduFlow.Controllers
@@ -15,11 +14,14 @@ namespace EduFlow.Controllers
     [ApiController]
     public class EnrollmentController : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public EnrollmentController(AppDbContext context)
+        private readonly IUserRepository _userRepository;
+        private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
+        public EnrollmentController(IUserRepository userRepository, ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository)
         {
-            _context = context;
+            _userRepository = userRepository;
+            _courseRepository = courseRepository;
+            _enrollmentRepository = enrollmentRepository;
         }
 
 
@@ -27,70 +29,54 @@ namespace EduFlow.Controllers
         [Authorize(Roles ="Student")]
         public async Task<IActionResult> Enroll(EnrollmentCreateDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            var course = await _context.Courses.FirstOrDefaultAsync(c=>c.Id == dto.CourseId);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var course = await _courseRepository.GetByIdAsync(dto.CourseId);
 
             if (course == null)
             {
                 return BadRequest("Course doesn't exist");
             }
 
-            if (student == null)
-            {
-                return Unauthorized("Student doesn't exist."); 
-            }
-
-            if(await _context.Enrollments.AnyAsync(e => e.UserId == student.Id && e.CourseId == dto.CourseId))
+            if(await _enrollmentRepository.IsUserEnrolledAsync(userId, dto.CourseId))
             {
                 return BadRequest("Student is already enrolled in this course");
             }
 
-            var enrollemt = new Enrollment
+            var enrollment = new Enrollment
             {
-                UserId = student.Id,
+                UserId = userId,
                 CourseId = dto.CourseId,
                 EnrolledAt = DateTime.UtcNow
             };
 
-            _context.Add(enrollemt);
-            await _context.SaveChangesAsync();
+            await _enrollmentRepository.AddAsync(enrollment);
+            await _enrollmentRepository.SaveChangesAsync();
 
             return Ok("User enrolled succesfully");
         }
 
         [HttpDelete("unenroll/{courseId}")]
-        [Authorize(Roles ="Student")]
-
+        [Authorize(Roles = "Student")]
         public async Task<IActionResult> Unenroll(int courseId)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+            var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
             {
                 return BadRequest("Course doesn't exist");
             }
 
-            if (student == null)
-            {
-                return Unauthorized("Student doesn't exist.");
-            }
-
-            var enrollment = await _context.Enrollments
-                .FirstOrDefaultAsync(e => e.UserId == student.Id && e.CourseId == courseId);
+            var enrollment = await _enrollmentRepository.GetByUserAndCourseAsync(userId, courseId);
 
             if (enrollment == null)
             {
                 return BadRequest("Student is not yet enrolled in this course");
             }
-            else
-            {
-                _context.Enrollments.Remove(enrollment);
-                await _context.SaveChangesAsync();
-                return Ok("Unenrolled succesfully.");
-            }
+
+            await _enrollmentRepository.DeleteAsync(enrollment);
+            await _enrollmentRepository.SaveChangesAsync();
+            return Ok("Unenrolled successfully.");
         }
 
         [HttpGet("myenrollments")]
@@ -98,28 +84,20 @@ namespace EduFlow.Controllers
 
         public async Task<IActionResult> GetMyEnrollemts()
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            if (student == null)
-            {
-                return Unauthorized("Student doesn't exist.");
-            }
+            var enrollments = await _enrollmentRepository.GetAllByUserIdAsync(userId);
 
-            var response = await _context.Enrollments
-                .Where(e => e.UserId == student.Id)
+            var response = enrollments
                 .Select(e => new EnrollmentResponseDto
                 {
                     Id = e.Id,
                     StudentId = e.UserId,
                     CourseId = e.CourseId,
                     StudentFullName = e.User.FullName
-                })
-                .ToListAsync();
-
+                });
+                
             return Ok(response);
-
         }
     }
 }

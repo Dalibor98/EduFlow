@@ -1,11 +1,8 @@
-﻿using EduFlow.Data;
-using EduFlow.DTOs.Quiz;
+﻿using EduFlow.DTOs.Quiz;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace EduFlow.Controllers
@@ -14,40 +11,32 @@ namespace EduFlow.Controllers
     [ApiController]
     public class QuizController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        
-        public QuizController(AppDbContext context)
+        private readonly IQuizRepository _quizRepository;
+        private readonly IModuleRepository _moduleRepository;
+
+        public QuizController(IQuizRepository quizRepository, IModuleRepository moduleRepository)
         {
-            _context = context;
+            _quizRepository = quizRepository;
+            _moduleRepository = moduleRepository;
         }
 
         [HttpPost("{moduleId}")]
         [Authorize(Roles = "Professor")]
-
-        public async Task<IActionResult> CreateQuiz (int moduleId, QuizCreateDto dto)
+        public async Task<IActionResult> CreateQuiz(int moduleId, QuizCreateDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var professor = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-
-            if (professor == null)
-            {
-                return BadRequest("Professor doesn't exist.");
-            }
-            var module = await _context.Modules.FirstOrDefaultAsync(m=> m.Id == moduleId);
+            var module = await _moduleRepository.GetByIdWithOwnershipCheckAsync(moduleId, userId);
             if (module == null)
             {
-                return BadRequest("Module doesn't exist.");
+                return NotFound("Module not found or access denied.");
             }
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.ProfessorId == professor.Id && c.Id == module.CourseId);
-            if (course == null)
+
+            if (await _quizRepository.TitleExistsInModuleAsync(dto.Title, moduleId))
             {
-                return BadRequest("Course not found or acess denied.");
+                return BadRequest("Quiz with this title already exists.");
             }
-            if(await _context.Quizzes.AnyAsync(q=>q.Title == dto.Title && q.ModuleId == moduleId))
-            {
-                return BadRequest("Quiz with this title already exists");
-            }
+
             var quiz = new Quiz
             {
                 Title = dto.Title,
@@ -56,8 +45,8 @@ namespace EduFlow.Controllers
                 ModuleId = moduleId
             };
 
-            _context.Add(quiz);
-            await _context.SaveChangesAsync();
+            await _quizRepository.AddAsync(quiz);
+            await _quizRepository.SaveChangesAsync();
             return Ok("Quiz created successfully.");
         }
     }

@@ -1,6 +1,6 @@
-﻿using EduFlow.Data;
-using EduFlow.DTOs.Course;
+﻿using EduFlow.DTOs.Course;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,34 +11,30 @@ namespace EduFlow.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration;
-        public CourseController(IConfiguration configuration, AppDbContext context)
+        private readonly ICourseRepository _courseRepository;
+
+        public CourseController(ICourseRepository courseRepository)
         {
-            _configuration = configuration;
-            _context = context;
+            _courseRepository = courseRepository;
         }
 
         [HttpPost("create-course")]
-        [Authorize(Roles ="Professor")]
-        public async Task <IActionResult> CreateCourse(CourseCreateDto dto)
+        [Authorize(Roles = "Professor")]
+        public async Task<IActionResult> CreateCourse(CourseCreateDto dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var professor = _context.Users.FirstOrDefault(u => u.Email == email);
-            if (professor == null)
-            {
-                return Unauthorized("Professor doesn't exist");
-            }
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
             var course = new Course
             {
                 Description = dto.Description,
                 Title = dto.Title,
                 CreatedAt = DateTime.UtcNow,
-                ProfessorId = professor.Id,
+                ProfessorId = userId,
             };
-            _context.Add(course);
-            await _context.SaveChangesAsync();
-            return Ok("Course created succesfully.");
+
+            await _courseRepository.AddAsync(course);
+            await _courseRepository.SaveChangesAsync();
+            return Ok("Course created successfully.");
         }
     }
 }
