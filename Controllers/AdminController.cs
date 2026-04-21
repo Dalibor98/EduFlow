@@ -1,6 +1,6 @@
-﻿using EduFlow.Data;
-using EduFlow.DTOs.Auth;
+﻿using EduFlow.DTOs.Auth;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,19 +10,17 @@ namespace EduFlow.Controllers
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration;
-        public AdminController(AppDbContext context,IConfiguration configuration) 
+        private readonly IUserRepository _userRepository;
+        public AdminController(IUserRepository userRepository) 
         {
-            _configuration = configuration;
-            _context = context;
+            _userRepository = userRepository;   
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("register-professor")]
         public async Task<IActionResult> RegisterProfessor(RegisterDto dto)
         {
-            if(_context.Users.Any(u=>u.Email == dto.Email))
+            if(await _userRepository.GetByEmailAsync(dto.Email) != null)
             {
                 return BadRequest("Professor with this email exists");
             }
@@ -36,9 +34,9 @@ namespace EduFlow.Controllers
 
             };
 
-            _context.Users.Add(professor);
+            await _userRepository.AddAsync(professor);
 
-            await _context.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
             return Ok("Professor registered succesfully.");
         }
         

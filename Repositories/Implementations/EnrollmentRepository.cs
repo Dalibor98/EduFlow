@@ -12,11 +12,14 @@ namespace EduFlow.Repositories.Implementations
         }
         public async Task<IEnumerable<Enrollment>> GetAllByUserIdAsync(int userId)
         {
-            return await _context.Enrollments.Where(e => e.UserId == userId).ToListAsync();
+            return await _context.Enrollments.Include(e => e.User).Where(e => e.UserId == userId).ToListAsync();
         }
-        public async Task<bool> ExistsAsync(int userId, int courseId)
+        public async Task<bool> IsUserEnrolledAsync(int userId, int courseId)
         {
             return await _context.Enrollments.AnyAsync(e => e.UserId == userId && e.CourseId == courseId);
         }
-    }
+        public async Task<Enrollment?> GetByUserAndCourseAsync(int userId, int courseId)
+        {
+            return await _context.Enrollments.FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
+        }
 }

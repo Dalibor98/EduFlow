@@ -3,6 +3,6 @@ namespace EduFlow.Repositories.Interfaces
 {
     public interface IQuizRepository : IRepository<Quiz>
     {
-        // TOODOO : Will add methods specific to Quiz repository when needed
+        Task<bool> TitleExistsInModuleAsync(string title, int moduleId);
     }
 }

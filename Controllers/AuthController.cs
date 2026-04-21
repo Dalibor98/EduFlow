@@ -1,7 +1,6 @@
-﻿using EduFlow.Data;
-using EduFlow.DTOs.Auth;
+﻿using EduFlow.DTOs.Auth;
 using EduFlow.Models;
-using Microsoft.AspNetCore.Authorization;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,19 +13,19 @@ namespace EduFlow.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        
-        public AuthController(AppDbContext context, IConfiguration configuration)
+
+        public AuthController(IUserRepository userRepository, IConfiguration configuration)
         {
-            _context = context;
+            _userRepository = userRepository;
             _configuration = configuration;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            if(_context.Users.Any(u => u.Email == dto.Email))
+            if(await _userRepository.GetByEmailAsync(dto.Email) != null)
             {
                 return BadRequest("Email already exists");
             }
@@ -39,9 +38,9 @@ namespace EduFlow.Controllers
                 Role = "Student",
                 CreatedAt = DateTime.UtcNow
             };
-            _context.Users.Add(user);
+            await _userRepository.AddAsync(user);
 
-            await _context.SaveChangesAsync();
+            await _userRepository.SaveChangesAsync();
 
             return Ok("Student registered succesfully");
         }
@@ -49,7 +48,7 @@ namespace EduFlow.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Email == dto.Email);
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
 
             if (user != null && BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
@@ -59,12 +58,6 @@ namespace EduFlow.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
-        [Authorize(Roles = "Student")]
-        [HttpGet("test")]
-        public async Task<IActionResult> TestMethd()
-        {
-            return Ok();
-        }
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"] 

@@ -2,6 +2,7 @@
 using EduFlow.DTOs;
 using EduFlow.DTOs.Module;
 using EduFlow.Models;
+using EduFlow.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,15 @@ namespace EduFlow.Controllers
     [ApiController]
     public class ModuleController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IModuleRepository _moduleRepository;
+        private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
 
-        public ModuleController(AppDbContext context)
+        public ModuleController(IModuleRepository moduleRepository, ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository)
         {
-            _context = context;
+            _moduleRepository = moduleRepository;
+            _courseRepository = courseRepository;
+            _enrollmentRepository = enrollmentRepository;
         }
 
 
@@ -25,17 +30,11 @@ namespace EduFlow.Controllers
         [HttpPost("{courseId}")]
         public async Task<IActionResult> CreateModule(int courseId,ModuleCreateDto _dto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var professor = await _context.Users.FirstOrDefaultAsync(u=> u.Email == email);
+            var course = await _courseRepository.GetByIdAndProfessorAsync(courseId, userId);
 
-            if (professor == null)
-            {
-                return BadRequest("Professor doesn't exist.");
-            }
-
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.ProfessorId == professor.Id && c.Id == courseId);
-            if(course == null)
+            if (course == null)
             {
                 return BadRequest("Course not found or acess denied.");
             }
@@ -48,8 +47,8 @@ namespace EduFlow.Controllers
                 CreatedAt = DateTime.UtcNow,
             };
 
-            _context.Add(module);
-            await _context.SaveChangesAsync();
+            await _moduleRepository.AddAsync(module);
+            await _moduleRepository.SaveChangesAsync();
             return Ok("Module created successfully.");
         }
 
@@ -58,27 +57,25 @@ namespace EduFlow.Controllers
 
         public async Task<IActionResult> GetMyModules(int courseId)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            
+            var course = await _courseRepository.GetByIdAsync(courseId);
 
-            if (student == null)
-            {
-                return BadRequest("Permission denied.");
-            }
-            var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId);
             if (course == null)
             {
                 return BadRequest("Course not found.");
             }
            
-            var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.CourseId == courseId && e.UserId == student.Id);
+            var enrollment = await _enrollmentRepository.GetByUserAndCourseAsync(userId, courseId);
             if (enrollment == null)
             {
                 return BadRequest("Permission denied.");
             }
 
-            var response = await _context.Modules
-                .Where(m => m.CourseId == courseId)
+            
+            var modules = await _moduleRepository.GetModulesByCourseIdAsync(courseId);
+
+            var response = modules
                 .Select(m => new ModuleResponseDto
                 {
                     Id = m.Id,
@@ -86,10 +83,9 @@ namespace EduFlow.Controllers
                     Description = m.Description,
                     Title = m.Title,
                     CreatedAt = m.CreatedAt
-                }).ToListAsync();
+                });
 
             return Ok(response);
-
         }
     }
 }
