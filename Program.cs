@@ -2,6 +2,8 @@ using EduFlow.Data;
 using EduFlow.Middleware;
 using EduFlow.Repositories.Implementations;
 using EduFlow.Repositories.Interfaces;
+using EduFlow.Services.Implementations;
+using EduFlow.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +53,7 @@ builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IAssignmentSubmissionRepository, AssignmentSubmissionRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
-
+builder .Services.AddScoped<IAuthService, AuthService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
