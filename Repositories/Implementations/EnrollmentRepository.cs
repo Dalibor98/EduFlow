@@ -22,4 +22,5 @@ namespace EduFlow.Repositories.Implementations
         {
             return await _context.Enrollments.FirstOrDefaultAsync(e => e.UserId == userId && e.CourseId == courseId);
         }
+    }
 }
