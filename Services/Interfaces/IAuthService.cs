@@ -6,6 +6,6 @@ namespace EduFlow.Services.Interfaces
     public interface IAuthService
     {
         Task<string> LoginAsync (string email, string password);
-        Task<User> RegisterAsync(string fullName, string email, string password);
+        Task RegisterAsync(string fullName, string email, string password);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using EduFlow.DTOs.Auth;
 using EduFlow.Models;
 using EduFlow.Repositories.Interfaces;
+using EduFlow.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,35 +11,19 @@ namespace EduFlow.Controllers
     [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        public AdminController(IUserRepository userRepository) 
+        private readonly IAdminService _adminService;
+        public AdminController(IAdminService adminService) 
         {
-            _userRepository = userRepository;   
+            _adminService = adminService;
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("register-professor")]
         public async Task<IActionResult> RegisterProfessor(RegisterDto dto)
         {
-            if(await _userRepository.GetByEmailAsync(dto.Email) != null)
-            {
-                return BadRequest("Professor with this email exists");
-            }
-            var professor = new User
-            {
-                Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                CreatedAt = DateTime.UtcNow,
-                FullName = dto.FullName,
-                Role = "Professor"
-
-            };
-
-            await _userRepository.AddAsync(professor);
-
-            await _userRepository.SaveChangesAsync();
-            return Ok("Professor registered succesfully.");
+            await _adminService.RegisterProfessorAsync(dto.FullName,dto.Email,dto.Password);
+            return Ok("Registration successful.");
         }
-        
+
     }
 }
