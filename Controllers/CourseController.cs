@@ -1,6 +1,5 @@
 ﻿using EduFlow.DTOs.Course;
-using EduFlow.Models;
-using EduFlow.Repositories.Interfaces;
+using EduFlow.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,11 +10,10 @@ namespace EduFlow.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-        private readonly ICourseRepository _courseRepository;
-
-        public CourseController(ICourseRepository courseRepository)
+        private readonly ICourseService _courseService;
+        public CourseController(ICourseService courseService)
         {
-            _courseRepository = courseRepository;
+            _courseService = courseService;
         }
 
         [HttpPost("create-course")]
@@ -24,17 +22,9 @@ namespace EduFlow.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var course = new Course
-            {
-                Description = dto.Description,
-                Title = dto.Title,
-                CreatedAt = DateTime.UtcNow,
-                ProfessorId = userId,
-            };
+            await _courseService.CreateCourseAsync(dto.Description, dto.Title, userId);
 
-            await _courseRepository.AddAsync(course);
-            await _courseRepository.SaveChangesAsync();
-            return Ok("Course created successfully.");
+            return Ok("Course created succesfully.");
         }
     }
 }

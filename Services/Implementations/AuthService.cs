@@ -30,7 +30,7 @@ namespace EduFlow.Services.Implementations
             return GenerateToken(user);
         }
 
-        public async Task<User> RegisterAsync(string fullName, string email, string password)
+        public async Task RegisterAsync(string fullName, string email, string password)
         {
             if (await _userRepository.GetByEmailAsync(email) != null)
             {
@@ -45,11 +45,9 @@ namespace EduFlow.Services.Implementations
                 Role = "Student",
                 CreatedAt = DateTime.UtcNow
             };
+
             await _userRepository.AddAsync(user);
-
             await _userRepository.SaveChangesAsync();
-
-            return user;
         }
         private string GenerateToken(User user)
         {
@@ -71,6 +69,7 @@ namespace EduFlow.Services.Implementations
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             };
             var token = new JwtSecurityToken(issuer, audience, claims, expires: DateTime.UtcNow.AddHours(1), signingCredentials: credentials);
+            
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
