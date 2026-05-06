@@ -1,6 +1,5 @@
 ﻿using EduFlow.DTOs.Quiz;
-using EduFlow.Models;
-using EduFlow.Repositories.Interfaces;
+using EduFlow.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,13 +10,12 @@ namespace EduFlow.Controllers
     [ApiController]
     public class QuizController : ControllerBase
     {
-        private readonly IQuizRepository _quizRepository;
-        private readonly IModuleRepository _moduleRepository;
+        private readonly IQuizService _quizService;
+       
 
-        public QuizController(IQuizRepository quizRepository, IModuleRepository moduleRepository)
+        public QuizController(IQuizService quizService)
         {
-            _quizRepository = quizRepository;
-            _moduleRepository = moduleRepository;
+            _quizService = quizService;
         }
 
         [HttpPost("{moduleId}")]
@@ -26,27 +24,8 @@ namespace EduFlow.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var module = await _moduleRepository.GetByIdWithOwnershipCheckAsync(moduleId, userId);
-            if (module == null)
-            {
-                return NotFound("Module not found or access denied.");
-            }
+            await _quizService.CreateQuizAsync(moduleId,dto.Title, dto.Description, userId);
 
-            if (await _quizRepository.TitleExistsInModuleAsync(dto.Title, moduleId))
-            {
-                return BadRequest("Quiz with this title already exists.");
-            }
-
-            var quiz = new Quiz
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                CreatedAt = DateTime.UtcNow,
-                ModuleId = moduleId
-            };
-
-            await _quizRepository.AddAsync(quiz);
-            await _quizRepository.SaveChangesAsync();
             return Ok("Quiz created successfully.");
         }
     }
