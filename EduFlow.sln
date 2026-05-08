@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36616.10 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11723.189 insiders
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduFlow", "EduFlow.csproj", "{D25ECC2C-E4FD-4949-8FC5-C8B0849BF7CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduFlow", "EduFlow\EduFlow.csproj", "{D25ECC2C-E4FD-4949-8FC5-C8B0849BF7CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EduFlow.Tests", "EduFlow.Tests\EduFlow.Tests.csproj", "{E07406AA-8392-4239-AD91-4F132B2A76E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D25ECC2C-E4FD-4949-8FC5-C8B0849BF7CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D25ECC2C-E4FD-4949-8FC5-C8B0849BF7CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D25ECC2C-E4FD-4949-8FC5-C8B0849BF7CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E07406AA-8392-4239-AD91-4F132B2A76E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E07406AA-8392-4239-AD91-4F132B2A76E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E07406AA-8392-4239-AD91-4F132B2A76E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E07406AA-8392-4239-AD91-4F132B2A76E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
