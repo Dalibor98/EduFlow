@@ -33,17 +33,19 @@
 *Phase 4 — Quality & Standards (in progress)*
 ✅ Data annotations on all DTOs
 ✅ DTO folder restructure by feature
-⬜ Proper error handling
-⬜ Input validation
-⬜ Repository pattern
-⬜ Service layer separation
+✅ Global exception handling middleware
+✅ Repository pattern
+✅ Service layer separation
+✅ Unit tests (AuthService)
 ⬜ Logging
 ⬜ OAuth (Google login)
 
 *PHASE 5 — Portfolio Ready*
-⬜ Clean GitHub with real commit history (currently not following gitflow) 
+⬜ Clean GitHub with real commit history
 ⬜ README
 ⬜ Deployed or locally runnable
-⬜ MessagingBus,Azure
+⬜ Azure deployment
+⬜ CI/CD pipeline
 
-PHASE 6 - FRONT END :) 
+*PHASE 6 — Frontend*
+⬜ React or Angular
