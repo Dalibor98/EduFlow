@@ -26,5 +26,18 @@ namespace EduFlow.Tests.Services
                 () => _adminService.RegisterProfessorAsync("John Doe", "test@example.com", "123")
             );
         }
+
+        [Fact]
+        public async Task RegisterProfessorAsync_ValidInput_CreatesProfessor()
+        {
+            _userRepositoryMock
+                .Setup(r => r.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Models.User?)null);
+
+            await _adminService.RegisterProfessorAsync("John Doe", "test@test.com", "123");
+
+            _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Models.User>()), Times.Once);
+            _userRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        }
     }
 }
