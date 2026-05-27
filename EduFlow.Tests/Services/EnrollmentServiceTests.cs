@@ -2,7 +2,6 @@
 using EduFlow.Services.Implementations;
 using Moq;
 using EduFlow.Models;
-using System.Runtime.CompilerServices;
 
 namespace EduFlow.Tests.Services
 {
