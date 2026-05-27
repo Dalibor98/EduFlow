@@ -14,5 +14,10 @@ namespace EduFlow.Repositories.Implementations
         {
             return await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId && c.ProfessorId == professorId);
         }
+
+        public async Task<bool> TitleExistsForProfessorAsync(string title, int professorId)
+        {
+            return await _context.Courses.AnyAsync(c => c.Title == title && c.ProfessorId == professorId);
+        }
     }
 }
