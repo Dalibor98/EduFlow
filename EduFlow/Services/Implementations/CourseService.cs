@@ -15,6 +15,11 @@ namespace EduFlow.Services.Implementations
 
         public async Task CreateCourseAsync(string description, string title, int userId)
         {
+           if(await _courseRepository.TitleExistsForProfessorAsync(title, userId))
+            {
+                throw new ArgumentException("Course with the same title already exists.");
+            }
+
             var course = new Course
             {
                 Description = description,
