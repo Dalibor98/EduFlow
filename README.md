@@ -17,7 +17,7 @@ EduFlow models the core workflow of an online course platform. Professors create
 ## Architecture
 
 EduFlow follows a strict layered architecture. Each layer depends only on the one directly below it. Controllers never touch DbContext directly, services never return HTTP responses, repositories never know about DTOs.
-
+```
 HTTP request
     │
     ▼
@@ -46,7 +46,7 @@ HTTP request
     │
     ▼
   SQL Server
-
+```
 A global ExceptionHandlingMiddleware maps service-thrown exceptions to HTTP status codes (ArgumentException → 400, UnauthorizedAccessException → 401, KeyNotFoundException → 404, anything else → 500 with the exception logged). Controllers contain no try/catch.
 
 ### Roles
@@ -60,11 +60,11 @@ Three roles, enforced via JWT claims and [Authorize(Roles = "...")] attributes:
 Students self-register via the public /api/Auth/register endpoint. Professors must be created by an admin.
 
 ### Domain hierarchy
-
+```
 Course ──┬── Module ──┬── Quiz
          │            └── Assignment ── AssignmentSubmission
          └── Enrollment ── (links Student to Course)
-
+```
 A course has one professor (owner) and many enrolled students. A module belongs to one course. Quizzes and assignments belong to one module. Submissions belong to one assignment and one student.
 
 
@@ -122,7 +122,7 @@ All endpoints are prefixed with /api. Authorization is enforced at the controlle
 | Method | Route       | Roles  | Description                                |
 |--------|-------------|--------|--------------------------------------------|
 | POST   | /register   | Public | Register a new student.                    |
-| POST   | /login      | Public | Authenticate; returns a JWT.               |
+| POST   | /login      | Public | Authenticate, returns a JWT.               |
 
 ### Admin - /api/Admin
 
@@ -166,7 +166,7 @@ All endpoints are prefixed with /api. Authorization is enforced at the controlle
 | GET    |  /myenrollments        | Student   | List the caller's enrollments.               |
 
 ## Project Structure
-
+```
 EduFlow/
 ├── EduFlow.sln
 ├── EduFlow/                       ← main project
@@ -191,7 +191,7 @@ EduFlow/
 │   └── Program.cs                 ← DI registration, JWT, Swagger, pipeline
 └── EduFlow.Tests/                 ← test project
     └── Services/                  ← one test class per service
-
+```
 ## Testing
 
 The EduFlow.Tests project contains 34 unit tests covering every service in the application - one test per branch of every public service method (happy path plus each thrown exception). Repositories are mocked with Moq- tests verify business behavior in isolation from EF Core.
