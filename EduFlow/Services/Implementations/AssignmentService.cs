@@ -9,12 +9,14 @@ namespace EduFlow.Services.Implementations
         private readonly IModuleRepository _moduleRepository;
         private readonly IAssignmentRepository _assignmentRepository;
         private readonly IAssignmentSubmissionRepository _assignmentSubmissionRepository;
+        private readonly ILogger<AssignmentService> _logger;
 
-        public AssignmentService(IModuleRepository moduleRepository, IAssignmentRepository assignmentRepository, IAssignmentSubmissionRepository assignmentSubmissionRepository)
+        public AssignmentService(IModuleRepository moduleRepository, IAssignmentRepository assignmentRepository, IAssignmentSubmissionRepository assignmentSubmissionRepository, ILogger<AssignmentService> logger)
         {
             _moduleRepository = moduleRepository;
             _assignmentRepository = assignmentRepository;
             _assignmentSubmissionRepository = assignmentSubmissionRepository;
+            _logger = logger;
         }
 
         public async Task CreateAssignmentAsync(int moduleId, int userId, string title, string description, int maxScore, DateTime dueAt)
@@ -24,6 +26,8 @@ namespace EduFlow.Services.Implementations
 
             if (module == null)
             {
+                _logger.LogWarning("Create Assignment failed: module {ModuleId} not found or access denied for user {UserId}", moduleId, userId);
+
                 throw new KeyNotFoundException("Module not found or access denied.");
             }
 
@@ -42,6 +46,7 @@ namespace EduFlow.Services.Implementations
 
             await _assignmentRepository.AddAsync(assignment);
             await _assignmentRepository.SaveChangesAsync();
+            _logger.LogInformation("Assignment {AssignmentId} created in module {ModuleId} by user {UserId}", assignment.Id, moduleId, userId);
         }
 
         public async Task<string> GradeSubmissionAsync(int submissionId, int score, int userId)
@@ -51,6 +56,8 @@ namespace EduFlow.Services.Implementations
 
             if (assignmentSubmission == null)
             {
+                _logger.LogWarning("Grading submission failed: submission {SubmissionId} not found or access denied for user {UserId}", submissionId, userId);
+
                 throw new KeyNotFoundException("Submission does not exist or not authorized.");
             }
 
@@ -61,8 +68,16 @@ namespace EduFlow.Services.Implementations
 
             var message = assignmentSubmission.Score == null ? "Assignment graded successfully." : "Assignment grade overridden successfully.";
 
+            var isOverride = assignmentSubmission.Score != null;
+
             assignmentSubmission.Score = score;
+
             await _assignmentSubmissionRepository.SaveChangesAsync();
+
+            if (isOverride)
+                _logger.LogInformation("Submission {SubmissionId} grade overridden to {Score} by user {UserId}", submissionId, score, userId);
+            else
+                _logger.LogInformation("Submission {SubmissionId} graded {Score} by user {UserId}", submissionId, score, userId);
 
             return message;
         }
@@ -74,6 +89,8 @@ namespace EduFlow.Services.Implementations
 
             if (assignment == null)
             {
+                _logger.LogWarning("Assignment submission failed: assignment {AssignmentId} not found or access denied for user {UserId}", assignmentId, userId);
+
                 throw new UnauthorizedAccessException("Assignment not found or access denied.");
             }
 
@@ -95,6 +112,8 @@ namespace EduFlow.Services.Implementations
 
             await _assignmentSubmissionRepository.AddAsync(assignmentSubmission);
             await _assignmentSubmissionRepository.SaveChangesAsync();
+            _logger.LogInformation( "Assignment {AssignmentId} submitted by user {UserId}", assignmentId, userId);
+
         }
     }
 }

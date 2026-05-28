@@ -1,5 +1,7 @@
-﻿using EduFlow.Repositories.Interfaces;
+﻿using Castle.Core.Logging;
+using EduFlow.Repositories.Interfaces;
 using EduFlow.Services.Implementations;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EduFlow.Tests.Services
@@ -8,11 +10,13 @@ namespace EduFlow.Tests.Services
     {
         private readonly Mock<ICourseRepository> _courseRepositoryMock;
         private readonly CourseService _courseService;
+        private readonly Mock<ILogger<CourseService>> _loggerMock;
 
         public CourseServiceTests()
         {
             _courseRepositoryMock = new Mock<ICourseRepository>();
-            _courseService = new CourseService(_courseRepositoryMock.Object);
+            _loggerMock = new Mock<ILogger<CourseService>>();
+            _courseService = new CourseService(_courseRepositoryMock.Object,_loggerMock.Object);
         }
 
 

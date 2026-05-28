@@ -1,5 +1,6 @@
 ﻿using EduFlow.Repositories.Interfaces;
 using EduFlow.Services.Implementations;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EduFlow.Tests.Services
@@ -11,16 +12,19 @@ namespace EduFlow.Tests.Services
         private readonly Mock<IModuleRepository> _moduleRepositoryMock;
         private readonly Mock<IAssignmentSubmissionRepository> _assignmentSubmissionRepositoryMock;
         private readonly AssignmentService _assignmentService;
+        private readonly Mock<ILogger<AssignmentService>> _loggerMock;
 
         public AssignmentServiceTests()
         {
             _assignmentRepositoryMock = new Mock<IAssignmentRepository>();
             _moduleRepositoryMock = new Mock<IModuleRepository>();
+            _loggerMock = new Mock<ILogger<AssignmentService>>();
             _assignmentSubmissionRepositoryMock = new Mock<IAssignmentSubmissionRepository>();
             _assignmentService = new AssignmentService(
                 _moduleRepositoryMock.Object,
                 _assignmentRepositoryMock.Object,
-                _assignmentSubmissionRepositoryMock.Object
+                _assignmentSubmissionRepositoryMock.Object,
+                _loggerMock.Object
             );
         }
 
