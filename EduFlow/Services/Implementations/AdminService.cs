@@ -7,10 +7,12 @@ namespace EduFlow.Services.Implementations
     public class AdminService : IAdminService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<AdminService> _logger;
 
-        public AdminService(IUserRepository userRepository)
+        public AdminService(IUserRepository userRepository, ILogger<AdminService> logger)
         {
             _userRepository = userRepository;
+            _logger = logger;
         }
         public async Task RegisterProfessorAsync(string fullName, string email, string password)
         {
@@ -30,6 +32,7 @@ namespace EduFlow.Services.Implementations
             await _userRepository.AddAsync(professor);
 
             await _userRepository.SaveChangesAsync();
+            _logger.LogInformation("Professor {ProfessorId} registered", professor.Id);
         }
     }
 }

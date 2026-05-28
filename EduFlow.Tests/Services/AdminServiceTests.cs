@@ -1,5 +1,6 @@
 ﻿using EduFlow.Repositories.Interfaces;
 using EduFlow.Services.Implementations;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EduFlow.Tests.Services
@@ -7,12 +8,14 @@ namespace EduFlow.Tests.Services
     public class AdminServiceTests
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<ILogger<AdminService>> _loggerMock;
         private readonly AdminService _adminService;
 
         public AdminServiceTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _adminService = new AdminService(_userRepositoryMock.Object);
+            _loggerMock = new Mock<ILogger<AdminService>>();
+            _adminService = new AdminService(_userRepositoryMock.Object,_loggerMock.Object);
         }
 
         [Fact]
