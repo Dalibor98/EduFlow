@@ -9,18 +9,22 @@ namespace EduFlow.Services.Implementations
 
         private readonly ICourseRepository _courseRepository;
         private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly ILogger<EnrollmentService> _logger;
 
-        public EnrollmentService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository)
+        public EnrollmentService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, ILogger<EnrollmentService> logger)
         {
             _courseRepository = courseRepository;
             _enrollmentRepository = enrollmentRepository;
+            _logger = logger;
         }
+
         public async Task EnrollAsync(int userId, int courseId)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
 
             if (course == null)
             {
+                _logger.LogWarning("Enroll failed: course {CourseId} not found", courseId);
                 throw new KeyNotFoundException("Course doesn't exist");
             }
 
@@ -38,6 +42,8 @@ namespace EduFlow.Services.Implementations
 
             await _enrollmentRepository.AddAsync(enrollment);
             await _enrollmentRepository.SaveChangesAsync();
+            _logger.LogInformation("User {UserId} enrolled in course {CourseId}", userId, courseId);
+
         }
 
         public async Task<IEnumerable<Enrollment>> GetMyEnrollmentsAsync(int userId)
@@ -50,6 +56,7 @@ namespace EduFlow.Services.Implementations
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
             {
+                _logger.LogWarning("Unenroll failed: course {CourseId} not found", courseId);
                 throw new KeyNotFoundException("Course doesn't exist");
             }
 
@@ -62,6 +69,7 @@ namespace EduFlow.Services.Implementations
 
             await _enrollmentRepository.DeleteAsync(enrollment);
             await _enrollmentRepository.SaveChangesAsync();
+            _logger.LogInformation("User {UserId} unenrolled from course {CourseId}", userId, courseId);
         }
 
     }

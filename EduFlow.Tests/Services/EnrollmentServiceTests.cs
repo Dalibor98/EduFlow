@@ -2,6 +2,8 @@
 using EduFlow.Services.Implementations;
 using Moq;
 using EduFlow.Models;
+using Microsoft.Extensions.Logging;
+
 
 namespace EduFlow.Tests.Services
 {
@@ -11,12 +13,14 @@ namespace EduFlow.Tests.Services
         private readonly Mock<ICourseRepository> _courseRepositoryMock;
         private readonly Mock<IEnrollmentRepository> _enrollmentRepositoryMock;
         private readonly EnrollmentService _enrollmentService;
+        private readonly Mock<ILogger<EnrollmentService>> _loggerMock;
 
         public EnrollmentServiceTests()
         {
             _courseRepositoryMock = new Mock<ICourseRepository>();
             _enrollmentRepositoryMock = new Mock<IEnrollmentRepository>();
-            _enrollmentService = new(_courseRepositoryMock.Object, _enrollmentRepositoryMock.Object);
+            _loggerMock = new Mock<ILogger<EnrollmentService>>();
+            _enrollmentService = new(_courseRepositoryMock.Object, _enrollmentRepositoryMock.Object,_loggerMock.Object);
         }
 
 
