@@ -2,6 +2,7 @@
 using EduFlow.Repositories.Interfaces;
 using EduFlow.Services.Implementations;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace EduFlow.Tests.Services
@@ -11,12 +12,14 @@ namespace EduFlow.Tests.Services
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IConfiguration> _configurationMock;
         private readonly AuthService _authService;
+        private readonly Mock<ILogger<AuthService>> _loggerMock;
 
         public AuthServiceTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
             _configurationMock = new Mock<IConfiguration>();
-            _authService = new AuthService(_userRepositoryMock.Object, _configurationMock.Object);
+            _loggerMock = new Mock<ILogger<AuthService>>();
+            _authService = new AuthService(_userRepositoryMock.Object, _configurationMock.Object,_loggerMock.Object);
         }
 
         [Fact]

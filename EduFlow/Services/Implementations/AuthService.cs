@@ -12,11 +12,13 @@ namespace EduFlow.Services.Implementations
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _logger = logger;
         }
         public async Task<string> LoginAsync(string email, string password)
         {
@@ -24,9 +26,11 @@ namespace EduFlow.Services.Implementations
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
+                _logger.LogWarning( "Failed login attempt for email {Email}", email);
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
+            _logger.LogInformation("User {UserId} logged in", user.Id);
             return GenerateToken(user);
         }
 
@@ -48,6 +52,7 @@ namespace EduFlow.Services.Implementations
 
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
+            _logger.LogInformation("User {UserId} registered", user.Id);
         }
         private string GenerateToken(User user)
         {

@@ -6,12 +6,14 @@ namespace EduFlow.Middleware
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next)
+        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
-
+        
         public async Task InvokeAsync (HttpContext context)
         {
             try
@@ -33,6 +35,11 @@ namespace EduFlow.Middleware
                 ArgumentException => 400,
                 _ => 500
             };
+            
+            if (statusCode == 500)
+            {
+                _logger.LogError(exception, "Unhandled exception while processing {Path}",context.Request.Path);
+            }
 
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
