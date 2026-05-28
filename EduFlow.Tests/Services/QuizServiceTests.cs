@@ -2,6 +2,7 @@
 using EduFlow.Services.Implementations;
 using EduFlow.Models;
 using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace EduFlow.Tests.Services
 {
@@ -10,13 +11,15 @@ namespace EduFlow.Tests.Services
         private readonly Mock<IModuleRepository> _moduleRepositoryMock;
         private readonly Mock<IQuizRepository> _quizRepositoryMock;
         private readonly QuizService _quizService;
+        private readonly Mock<ILogger<QuizService>> _loggerMock;>
 
 
         public QuizServiceTests()
         {
             _moduleRepositoryMock = new Mock<IModuleRepository>();
             _quizRepositoryMock = new Mock<IQuizRepository>();
-            _quizService = new(_quizRepositoryMock.Object, _moduleRepositoryMock.Object);
+            _loggerMock = new Mock<ILogger<QuizService>>();
+            _quizService = new(_quizRepositoryMock.Object, _moduleRepositoryMock.Object,_loggerMock.Object);
         }
 
 
