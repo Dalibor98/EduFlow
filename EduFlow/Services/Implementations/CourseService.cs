@@ -7,10 +7,12 @@ namespace EduFlow.Services.Implementations
     public class CourseService : ICourseService
     {
         private readonly ICourseRepository _courseRepository;
+        private readonly ILogger<CourseService> _logger;
 
-        public CourseService(ICourseRepository courseRepository)
+        public CourseService(ICourseRepository courseRepository, ILogger<CourseService> logger)
         {
             _courseRepository = courseRepository;
+            _logger = logger;
         }
 
         public async Task CreateCourseAsync(string description, string title, int userId)
@@ -30,6 +32,7 @@ namespace EduFlow.Services.Implementations
 
             await _courseRepository.AddAsync(course);
             await _courseRepository.SaveChangesAsync();
+            _logger.LogInformation("Course created. ProfessorId: {ProfessorId}, CourseId: {CourseId}", userId, course.Id);
         }
     }
 }
