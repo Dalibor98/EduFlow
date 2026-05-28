@@ -11,7 +11,7 @@ namespace EduFlow.Tests.Services
         private readonly Mock<IModuleRepository> _moduleRepositoryMock;
         private readonly Mock<IQuizRepository> _quizRepositoryMock;
         private readonly QuizService _quizService;
-        private readonly Mock<ILogger<QuizService>> _loggerMock;>
+        private readonly Mock<ILogger<QuizService>> _loggerMock;
 
 
         public QuizServiceTests()
