@@ -122,7 +122,7 @@ All endpoints are prefixed with /api. Authorization is enforced at the controlle
 | Method | Route       | Roles  | Description                                |
 |--------|-------------|--------|--------------------------------------------|
 | POST   | /register   | Public | Register a new student.                    |
-| POST   | /login      | Public | Authenticate; returns a JWT.               |
+| POST   | /login      | Public | Authenticate, returns a JWT.               |
 
 ### Admin - /api/Admin
 
