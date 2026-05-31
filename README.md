@@ -101,6 +101,18 @@ A course has one professor (owner) and many enrolled students. A module belongs 
 
    Or press F5 in Visual Studio. Swagger UI opens at https://localhost:7056/swagger (or http://localhost:5232/swagger).
 
+**OR**
+
+## Live Demo
+
+The API is deployed on Azure App Service with an Azure SQL backend:
+
+**https://app-eduflow-awfjg8hyfua7drdy.westeurope-01.azurewebsites.net/swagger**
+
+Log in via POST /api/Auth/login with one of the seeded accounts (see Test Credentials below), copy the returned token, and click **Authorize** in Swagger to attach it as a Bearer token.
+
+ **Note on first request:**   The database runs on Azure SQL's serverless free tier, which auto-pauses after inactivity. The first request after a pause triggers a cold start and may take 30–60 seconds to respond. Subsequent requests are fast. If the first call seems to hang, wait and retry once.
+
 ### Test credentials
 
 The seed migration creates three accounts. All use the password `password123`.
